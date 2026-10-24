@@ -1,0 +1,114 @@
+{
+  "extName": {
+    "message": "Google 翻译"
+  },
+  "extDescription": {
+    "message": "在浏览网页时轻松查看其翻译版本。由 Google 翻译团队提供。"
+  },
+  "actionTitle": {
+    "message": "Google 翻译\n\n左键点击即可翻译！\n右键点击即可查看选项。"
+  },
+  "translate": {
+    "message": "翻译"
+  },
+  "more": {
+    "message": "更多 »"
+  },
+  "learnMore": {
+    "message": "了解详情"
+  },
+  "openInTranslate": {
+    "message": "在 Google 翻译中打开"
+  },
+  "footerOptions": {
+    "message": "扩展程序选项"
+  },
+  "translationError": {
+    "message": "提取翻译时出错，请检查网络连接。"
+  },
+  "optionsPageTitle": {
+    "message": "Google 翻译扩展程序选项"
+  },
+  "optionsTitle": {
+    "message": "Chrome 扩展程序选项"
+  },
+  "optionsLang": {
+    "message": "我的主要语言："
+  },
+  "optionsPopup": {
+    "message": "弹出翻译："
+  },
+  "optionsPopupTitle": {
+    "message": "在我选中字词或短语时："
+  },
+  "optionsPopupDesc": {
+    "message": "立即弹出翻译。"
+  },
+  "optionsPopupTip": {
+    "message": "您在 Chrome 浏览器中选择的所有文字都会发送至 Google 服务器，以确定是否应显示翻译。"
+  },
+  "optionsIconDesc": {
+    "message": "显示点击即可弹出翻译的图标。"
+  },
+  "optionsNoneDesc": {
+    "message": "不显示图标和弹出式翻译。"
+  },
+  "optionsNoneTip": {
+    "message": "您仍然可以点击 Google 翻译扩展功能图标来翻译所选文字。"
+  },
+  "optionsAlwaysShowIcon": {
+    "message": "即使网页使用我的语言也显示图标。"
+  },
+  "optionsImageMenu": {
+    "message": "右键菜单包含图片翻译"
+  },
+  "optionsSave": {
+    "message": "保存"
+  },
+  "optionsReset": {
+    "message": "重置"
+  },
+  "optionsSavedStatus": {
+    "message": "选项已保存。"
+  },
+  "optionsFooterHomepage": {
+    "message": "Google 翻译首页"
+  },
+  "optionsFooterPrivacy": {
+    "message": "隐私权"
+  },
+  "detectLanguage": {
+    "message": "检测语言"
+  },
+  "swapping": {
+    "message": "切换语言"
+  },
+  "close": {
+    "message": "关闭"
+  },
+  "sourcePlaceholder": {
+    "message": "输入要翻译的文本"
+  },
+  "playOriginal": {
+    "message": "朗读原文"
+  },
+  "playTranslation": {
+    "message": "朗读译文"
+  },
+  "tooLongToSpeak": {
+    "message": "超过$COUNT$字",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "selectionTooLong": {
+    "message": "选中内容超过 $COUNT$ 字符，请缩短后再试",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  }
+}

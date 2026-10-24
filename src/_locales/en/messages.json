@@ -1,0 +1,114 @@
+{
+  "extName": {
+    "message": "Google Translate"
+  },
+  "extDescription": {
+    "message": "View translations easily as you browse the web. By the Google Translate team."
+  },
+  "actionTitle": {
+    "message": "Google Translate\n\nLeft-click to translate!\nRight-click for options."
+  },
+  "translate": {
+    "message": "Translate"
+  },
+  "more": {
+    "message": "MORE »"
+  },
+  "learnMore": {
+    "message": "LEARN MORE"
+  },
+  "openInTranslate": {
+    "message": "OPEN IN GOOGLE TRANSLATE"
+  },
+  "footerOptions": {
+    "message": "Extension Options"
+  },
+  "translationError": {
+    "message": "Error fetching translation. Check your network connection."
+  },
+  "optionsPageTitle": {
+    "message": "Google Translate Extension Options"
+  },
+  "optionsTitle": {
+    "message": "Chrome Extension Options"
+  },
+  "optionsLang": {
+    "message": "My primary language:"
+  },
+  "optionsPopup": {
+    "message": "Pop-up translations:"
+  },
+  "optionsPopupTitle": {
+    "message": "When I select a word or phrase:"
+  },
+  "optionsPopupDesc": {
+    "message": "Immediately display popup."
+  },
+  "optionsPopupTip": {
+    "message": "Any text selected in your Chrome browser gets sent to the Google server to determine if a translation should be displayed."
+  },
+  "optionsIconDesc": {
+    "message": "Display icon that I can click to show pop-up."
+  },
+  "optionsNoneDesc": {
+    "message": "Don't display icon or pop-up."
+  },
+  "optionsNoneTip": {
+    "message": "You can still translate selected text by clicking the Google Translate extension icon."
+  },
+  "optionsAlwaysShowIcon": {
+    "message": "Show icon even if the page is in my language."
+  },
+  "optionsImageMenu": {
+    "message": "Include image translation in context menu"
+  },
+  "optionsSave": {
+    "message": "Save"
+  },
+  "optionsReset": {
+    "message": "Reset"
+  },
+  "optionsSavedStatus": {
+    "message": "Options saved."
+  },
+  "optionsFooterHomepage": {
+    "message": "Google Translate Homepage"
+  },
+  "optionsFooterPrivacy": {
+    "message": "Privacy"
+  },
+  "detectLanguage": {
+    "message": "Detect language"
+  },
+  "swapping": {
+    "message": "Swap languages"
+  },
+  "close": {
+    "message": "Close"
+  },
+  "sourcePlaceholder": {
+    "message": "Enter text to translate"
+  },
+  "playOriginal": {
+    "message": "Listen to original"
+  },
+  "playTranslation": {
+    "message": "Listen to translation"
+  },
+  "tooLongToSpeak": {
+    "message": "Over $COUNT$ characters",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "selectionTooLong": {
+    "message": "Selection is over $COUNT$ characters, please select less",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  }
+}

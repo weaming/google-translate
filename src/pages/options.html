@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <title></title>
+    <link rel="stylesheet" href="options.css" />
+    <script src="options.js" defer></script>
+  </head>
+  <body>
+    <div id="content">
+      <h1>
+        <div class="gtx-logo">Google 翻译</div>
+        <div id="options-title-heading"></div>
+      </h1>
+
+      <section class="gtx-section">
+        <label class="gtx-row">
+          <span id="lang-option" class="gtx-option-name"></span>
+          <select id="targetLangSel"></select>
+        </label>
+      </section>
+
+      <section class="gtx-section">
+        <div id="popup-option" class="gtx-option-title"></div>
+
+        <label class="gtx-choice">
+          <input type="radio" name="showBubble" value="2" />
+          <span class="gtx-choice-body">
+            <span id="popup-option-desc" class="gtx-choice-title"></span>
+            <span id="popup-option-tip" class="gtx-choice-tip"></span>
+          </span>
+        </label>
+
+        <label class="gtx-choice">
+          <input type="radio" name="showBubble" value="1" />
+          <span class="gtx-choice-body">
+            <span id="icon-option-desc" class="gtx-choice-title"></span>
+          </span>
+        </label>
+
+        <label class="gtx-choice">
+          <input type="radio" name="showBubble" value="0" />
+          <span class="gtx-choice-body">
+            <span id="none-option-desc" class="gtx-choice-title"></span>
+            <span id="none-option-tip" class="gtx-choice-tip"></span>
+          </span>
+        </label>
+
+        <label class="gtx-choice gtx-choice-check">
+          <input type="checkbox" id="detectLanguage" />
+          <span id="detect-language-option" class="gtx-choice-title"></span>
+        </label>
+
+        <label class="gtx-choice gtx-choice-check">
+          <input type="checkbox" id="addImageContextMenu" />
+          <span id="image-menu-option" class="gtx-choice-title"></span>
+        </label>
+      </section>
+
+      <div class="gtx-buttons">
+        <button id="saveBtn" type="button" class="gtx-primary"></button>
+        <button id="resetBtn" type="button" class="gtx-secondary"></button>
+        <span id="saveStatus" hidden></span>
+      </div>
+    </div>
+
+    <footer class="gtx-footer">
+      <a id="footer-homepage" target="_blank" rel="noreferrer"></a>
+    </footer>
+    <footer class="gtx-footer">
+      © <span id="year"></span> · <a id="footer-privacy" target="_blank" rel="noreferrer"></a>
+    </footer>
+  </body>
+</html>

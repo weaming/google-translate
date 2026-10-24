@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="popup.css" />
+    <script src="popup.js" defer></script>
+  </head>
+  <body class="gtx-content">
+    <div class="content">
+      <div id="search-bar">
+        <input type="text" id="text-input" autofocus autocomplete="off" spellcheck="true" />
+        <button id="new-translation" type="button" title=""></button>
+      </div>
+
+      <div id="lang-bar">
+        <select id="source-lang" title=""></select>
+        <button id="swap-lang" type="button" title=""></button>
+        <select id="target-lang" title=""></select>
+      </div>
+
+      <div id="translation" hidden>
+        <div id="result-text"></div>
+        <div id="result-sentences"></div>
+        <button id="play-audio" type="button" hidden></button>
+      </div>
+
+      <div id="buttons">
+        <a class="gtx-a" id="help" target="_blank" rel="noreferrer"></a>
+        <a class="gtx-a" id="more" target="_blank" rel="noreferrer"></a>
+      </div>
+    </div>
+
+    <footer class="gtx-footer">
+      <div id="autoOption"></div>
+      <span class="gtx-footer-sep">·</span>
+      <a class="gtx-a" id="options-link" href="#"></a>
+      <span class="gtx-footer-sep">·</span>
+      <a class="gtx-a" id="translate-link" target="_blank" rel="noreferrer"></a>
+    </footer>
+  </body>
+</html>

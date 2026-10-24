@@ -1,0 +1,19 @@
+{
+  "name": "google-translate-extension",
+  "version": "1.0.0",
+  "description": "Google 翻译扩展",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "bun ./build.ts",
+    "dev": "bun ./build.ts --watch",
+    "ship": "make up",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.4",
+    "@types/chrome": "^0.0.270",
+    "typescript": "^5.6.0"
+  }
+}
