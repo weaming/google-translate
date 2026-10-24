@@ -143,9 +143,6 @@ chrome.runtime.onMessage.addListener((message: RuntimeMessage, sender, sendRespo
     case 'pauseAudio':
       void ensureOffscreenDocument().then(() => forwardToOffscreen(message));
       break;
-    case 'openOptions':
-      void chrome.runtime.openOptionsPage();
-      break;
     default:
       break;
   }

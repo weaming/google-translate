@@ -1,8 +1,13 @@
 /** 选项页：目标语言、选中文本行为、语言检测开关 */
 
 import { t } from '../shared/i18n';
-import { splitChinese } from '../shared/lang';
-import { fetchSupportedLanguages } from '../shared/translate-api';
+import { localizeLanguages } from '../shared/lang';
+import {
+  FALLBACK_LANGUAGES,
+  fetchSupportedLanguages,
+  readCachedLanguages,
+  writeCachedLanguages,
+} from '../shared/translate-api';
 import type { LanguageOption } from '../shared/translate-api';
 import { defaultSettings, loadSettingsWithBootstrap, saveSettings } from '../shared/settings';
 import type { Settings, ShowBubbleValue } from '../shared/settings';
@@ -113,22 +118,25 @@ async function start(): Promise<void> {
   const elements = queryElements();
   const settings = await loadSettingsWithBootstrap();
 
-  try {
-    const languages = splitChinese(await fetchSupportedLanguages('zh_CN'));
-    fillTargetLanguages(elements.targetSelect, languages, settings.targetLang);
-  } catch {
-    fillTargetLanguages(
-      elements.targetSelect,
-      [
-        { code: 'en', name: 'English' },
-        { code: 'zh-CN', name: '中文（简体）' },
-        { code: 'zh-TW', name: '中文（繁體）' },
-      ],
-      settings.targetLang,
-    );
-  }
+  const detectLabel = localizedText('detectLanguage');
 
+  // 先用缓存立即渲染，页面不必等网络
+  const cached = await readCachedLanguages();
+  fillTargetLanguages(
+    elements.targetSelect,
+    localizeLanguages(cached ?? FALLBACK_LANGUAGES, detectLabel),
+    settings.targetLang,
+  );
   applySettings(elements, settings);
+
+  // 后台刷新语言列表
+  void fetchSupportedLanguages('zh_CN')
+    .then(async (fresh) => {
+      await writeCachedLanguages(fresh);
+      const selected = elements.targetSelect.value || settings.targetLang;
+      fillTargetLanguages(elements.targetSelect, localizeLanguages(fresh, detectLabel), selected);
+    })
+    .catch(() => undefined);
 
   elements.save.addEventListener('click', () => void persist(elements, collectSettings(elements)));
 

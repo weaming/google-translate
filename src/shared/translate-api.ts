@@ -220,3 +220,57 @@ export async function fetchSpeech(lang: string, text: string): Promise<string | 
 }
 
 export const translateBaseUrl = TRANSLATE_BASE;
+
+/* ---------------- 语言列表缓存 ---------------- */
+
+const LANG_CACHE_KEY = 'cachedLanguages';
+/** 缓存有效期：语言列表变动极少，一天足够 */
+const LANG_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+
+interface LanguageCache {
+  fetchedAt: number;
+  options: LanguageOption[];
+}
+
+/** 读缓存；过期或不存在返回 null */
+export async function readCachedLanguages(): Promise<LanguageOption[] | null> {
+  try {
+    const stored = await chrome.storage.local.get(LANG_CACHE_KEY);
+    const cache = stored[LANG_CACHE_KEY] as LanguageCache | undefined;
+    if (!cache || !Array.isArray(cache.options) || cache.options.length === 0) return null;
+
+    const isFresh = Date.now() - cache.fetchedAt < LANG_CACHE_TTL_MS;
+    return isFresh ? cache.options : null;
+  } catch {
+    return null;
+  }
+}
+
+/** 写入缓存，失败不抛错 */
+export async function writeCachedLanguages(options: LanguageOption[]): Promise<void> {
+  try {
+    const cache: LanguageCache = { fetchedAt: Date.now(), options };
+    await chrome.storage.local.set({ [LANG_CACHE_KEY]: cache });
+  } catch {
+    // 缓存失败不影响主流程
+  }
+}
+
+/** 内置兜底列表：网络不可用时也能让下拉框立刻可用 */
+export const FALLBACK_LANGUAGES: LanguageOption[] = [
+  { code: 'auto', name: 'Detect language' },
+  { code: 'en', name: 'English' },
+  { code: 'zh-CN', name: 'Chinese' },
+  { code: 'zh-TW', name: 'Chinese (Traditional)' },
+  { code: 'ja', name: 'Japanese' },
+  { code: 'ko', name: 'Korean' },
+  { code: 'fr', name: 'French' },
+  { code: 'de', name: 'German' },
+  { code: 'es', name: 'Spanish' },
+  { code: 'ru', name: 'Russian' },
+  { code: 'pt', name: 'Portuguese' },
+  { code: 'it', name: 'Italian' },
+  { code: 'ar', name: 'Arabic' },
+  { code: 'th', name: 'Thai' },
+  { code: 'vi', name: 'Vietnamese' },
+];

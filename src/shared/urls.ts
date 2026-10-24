@@ -32,6 +32,4 @@ export function getImageTranslateUrl(
 /** 网页版首页 */
 export const TRANSLATE_HOME_URL = 'https://translate.google.com/';
 
-export const HELP_URL = 'https://support.google.com/chrome/answer/173424';
-
 export const PRIVACY_URL = 'https://www.google.com/privacy.html';

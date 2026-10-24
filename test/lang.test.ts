@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { isChineseLang, isTargetLang, normLang, splitChinese } from '../src/shared/lang';
+import { isChineseLang, isTargetLang, localizeLanguages, normLang } from '../src/shared/lang';
 
 describe('normLang', () => {
   test('中文变体归一', () => {
@@ -35,19 +35,49 @@ describe('isTargetLang', () => {
   });
 });
 
-describe('splitChinese', () => {
+describe('localizeLanguages', () => {
   test('把 Chinese 拆成简繁两项', () => {
-    const result = splitChinese([
-      { code: 'en', name: 'English' },
-      { code: 'zh-CN', name: 'Chinese' },
-    ]);
+    const result = localizeLanguages(
+      [
+        { code: 'en', name: 'English' },
+        { code: 'zh-CN', name: 'Chinese' },
+      ],
+      '检测语言',
+    );
 
     expect(result.map((item) => item.code)).toEqual(['en', 'zh-CN', 'zh-TW']);
   });
 
-  test('没有中文条目时原样返回', () => {
-    const options = [{ code: 'en', name: 'English' }];
-    expect(splitChinese(options)).toEqual(options);
+  test('“检测语言”统一使用传入的本地文案', () => {
+    const result = localizeLanguages(
+      [
+        { code: 'auto', name: 'Detect language' },
+        { code: 'en', name: 'English' },
+      ],
+      '检测语言',
+    );
+
+    expect(result[0]).toEqual({ code: 'auto', name: '检测语言' });
+  });
+
+  test('英文环境使用英文文案', () => {
+    const result = localizeLanguages([{ code: 'auto', name: 'Automatic' }], 'Detect language');
+    expect(result[0]?.name).toBe('Detect language');
+  });
+
+  test('没有中文条目时只处理 auto', () => {
+    const result = localizeLanguages(
+      [
+        { code: 'auto', name: 'Detect language' },
+        { code: 'en', name: 'English' },
+      ],
+      '检测语言',
+    );
+
+    expect(result).toEqual([
+      { code: 'auto', name: '检测语言' },
+      { code: 'en', name: 'English' },
+    ]);
   });
 });
 

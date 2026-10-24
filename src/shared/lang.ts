@@ -29,13 +29,19 @@ export function isTargetLang(target: string, contentLang: string): boolean {
 }
 
 /**
- * 语言列表只有 zh-CN（显示为 Chinese），繁体靠地区码表达。
- * 这里把中文拆成简繁两项，供下拉框直接选择。
+ * 整理语言列表：
+ * 1. 接口返回的“检测语言”名称不随界面语言变化（中文环境也给英文），统一用本地文案；
+ * 2. 列表只有 zh-CN（显示为 Chinese），繁体靠地区码表达，这里拆成简繁两项。
  */
-export function splitChinese(options: LanguageOption[]): LanguageOption[] {
+export function localizeLanguages(options: LanguageOption[], detectLabel: string): LanguageOption[] {
   const result: LanguageOption[] = [];
 
   for (const option of options) {
+    if (option.code === 'auto') {
+      result.push({ code: 'auto', name: detectLabel });
+      continue;
+    }
+
     if (option.code !== 'zh-CN') {
       result.push(option);
       continue;

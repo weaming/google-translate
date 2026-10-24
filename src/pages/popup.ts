@@ -2,18 +2,22 @@
 
 import { t } from '../shared/i18n';
 import { sendRuntime } from '../shared/messages';
-import { splitChinese } from '../shared/lang';
+import { localizeLanguages } from '../shared/lang';
+import type { PageTranslateResult } from '../shared/page-translate';
 import {
+  FALLBACK_LANGUAGES,
   SPEECH_MAX_LENGTH,
   fetchSpeech,
   fetchSupportedLanguages,
+  readCachedLanguages,
   speechBlockReason,
   translate,
+  writeCachedLanguages,
 } from '../shared/translate-api';
 import type { LanguageOption, Sentence, TranslationResult } from '../shared/translate-api';
 import { loadSettingsWithBootstrap, saveSettings } from '../shared/settings';
 import type { Settings } from '../shared/settings';
-import { getTranslateUrl, HELP_URL } from '../shared/urls';
+import { getTranslateUrl } from '../shared/urls';
 
 const DEBOUNCE_MS = 400;
 const AUTO_LANG = 'auto';
@@ -38,10 +42,9 @@ interface Elements {
   resultText: HTMLElement;
   resultSentences: HTMLElement;
   playAudio: HTMLButtonElement;
-  help: HTMLAnchorElement;
-  more: HTMLAnchorElement;
+  translatePage: HTMLButtonElement;
+  pageStatus: HTMLElement;
   optionsLink: HTMLAnchorElement;
-  translateLink: HTMLAnchorElement;
 }
 
 function queryElements(): Elements {
@@ -61,10 +64,9 @@ function queryElements(): Elements {
     resultText: pick('result-text'),
     resultSentences: pick('result-sentences'),
     playAudio: pick<HTMLButtonElement>('play-audio'),
-    help: pick<HTMLAnchorElement>('help'),
-    more: pick<HTMLAnchorElement>('more'),
+    translatePage: pick<HTMLButtonElement>('translate-page'),
+    pageStatus: pick('page-status'),
     optionsLink: pick<HTMLAnchorElement>('options-link'),
-    translateLink: pick<HTMLAnchorElement>('translate-link'),
   };
 }
 
@@ -118,6 +120,8 @@ class PopupController {
   private timer = 0;
   private requestSeq = 0;
   private lastResult: TranslationResult | null = null;
+  /** 当前页是否已翻译，决定按钮行为 */
+  private pageTranslated = false;
 
   constructor(private readonly elements: Elements) {}
 
@@ -127,6 +131,7 @@ class PopupController {
     this.settings = await loadSettingsWithBootstrap();
 
     await this.loadLanguages();
+    await this.syncPageState();
     await this.focusActiveTabSelection();
 
     this.elements.input.focus();
@@ -139,11 +144,8 @@ class PopupController {
     elements.reset.title = t('translate');
     elements.reset.innerHTML = RESET_SVG;
     elements.swap.innerHTML = SWAP_SVG;
-    elements.help.textContent = t('learnMore');
-    elements.help.href = HELP_URL;
-    elements.more.textContent = t('more');
+    elements.translatePage.textContent = t('translatePage');
     elements.optionsLink.textContent = t('footerOptions');
-    elements.translateLink.textContent = t('translate');
     elements.swap.title = t('swapLanguages');
     setIconLabel(elements.playAudio, SPEAKER_SVG, t('playOriginal'));
   }
@@ -172,30 +174,50 @@ class PopupController {
 
     elements.playAudio.addEventListener('click', () => void this.playAudio());
 
+    elements.translatePage.addEventListener('click', () => {
+      // 单一入口按状态分派，避免 addEventListener 与 onclick 同时生效
+      if (this.pageTranslated) void this.restoreActivePage();
+      else void this.translateActivePage();
+    });
+
     elements.optionsLink.addEventListener('click', (event) => {
       event.preventDefault();
-      sendRuntime({ type: 'openOptions' });
+      chrome.runtime.openOptionsPage();
       window.close();
     });
+
   }
 
+  /**
+   * 立即用缓存或内置列表填充下拉框，界面无需等待网络；
+   * 随后在后台更新缓存，下次打开即可用上最新列表。
+   */
   private async loadLanguages(): Promise<void> {
-    const { elements } = this;
     const settings = this.settings ?? (await loadSettingsWithBootstrap());
+    const detectLabel = t('detectLanguage');
 
-    try {
-      this.languages = splitChinese(await fetchSupportedLanguages('zh_CN'));
-    } catch {
-      this.languages = [
-        { code: 'auto', name: t('detectLanguage') },
-        { code: 'en', name: 'English' },
-        { code: 'zh-CN', name: '中文（简体）' },
-        { code: 'zh-TW', name: '中文（繁體）' },
-      ];
-    }
+    const cached = await readCachedLanguages();
+    this.languages = localizeLanguages(cached ?? FALLBACK_LANGUAGES, detectLabel);
+    this.renderLanguageSelects(settings.targetLang);
 
-    fillSelect(elements.sourceSelect, this.languages, 'auto');
-    fillSelect(elements.targetSelect, this.languages.filter((item) => item.code !== 'auto'), settings.targetLang);
+    // 后台刷新，不阻塞界面
+    void fetchSupportedLanguages('zh_CN')
+      .then(async (fresh) => {
+        await writeCachedLanguages(fresh);
+        this.languages = localizeLanguages(fresh, detectLabel);
+        this.renderLanguageSelects(this.elements.targetSelect.value || settings.targetLang);
+      })
+      .catch(() => undefined);
+  }
+
+  /** 按当前语言列表重绘两个下拉框，尽量保留已选值 */
+  private renderLanguageSelects(selectedTarget: string): void {
+    const { sourceSelect, targetSelect } = this.elements;
+    const currentSource = sourceSelect.value || 'auto';
+    const currentTarget = targetSelect.value || selectedTarget;
+
+    fillSelect(sourceSelect, this.languages, currentSource);
+    fillSelect(targetSelect, this.languages.filter((item) => item.code !== 'auto'), currentTarget);
   }
 
   /** 若当前标签页有选中文本，作为初始查询 */
@@ -222,6 +244,117 @@ class PopupController {
     this.timer = window.setTimeout(() => void this.doTranslate(), DEBOUNCE_MS);
   }
 
+  /** 打开弹窗时同步页面是否已翻译，让按钮文案与页面状态一致 */
+  private async syncPageState(): Promise<void> {
+    const tabId = await this.activeTabId();
+    if (tabId === null) return;
+
+    try {
+      const [result] = await chrome.scripting.executeScript({
+        target: { tabId },
+        func: () => Boolean(document.querySelector('[data-gtx-done]')),
+      });
+
+      this.setPageTranslated(Boolean(result?.result));
+    } catch {
+      // 受限页面无法探测，保持默认文案
+    }
+  }
+
+  /** 取当前活动标签页，拿不到 id 说明是不可注入的页面 */
+  private async activeTabId(): Promise<number | null> {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    return tab?.id ?? null;
+  }
+
+  /**
+   * 翻译或还原当前页面。
+   * 先确认页面里已注入内容脚本，脚本不在时提示用户刷新。
+   */
+  private async translateActivePage(): Promise<void> {
+    const tabId = await this.activeTabId();
+    if (tabId === null) {
+      this.showPageStatus(t('translatePageFail'), true);
+      return;
+    }
+
+    const { translatePage } = this.elements;
+    translatePage.disabled = true;
+
+    try {
+      const injected = await chrome.scripting
+        .executeScript({
+          target: { tabId },
+          func: () => Boolean((globalThis as { __gtxInjected?: boolean }).__gtxInjected),
+        })
+        .catch(() => []);
+
+      if (!injected[0]?.result) {
+        this.showPageStatus(t('pageNeedsReload'), true);
+        return;
+      }
+
+      const result = (await chrome.tabs.sendMessage(tabId, { type: 'translatePage' })) as
+        | PageTranslateResult
+        | undefined;
+
+      this.renderPageResult(result);
+    } catch {
+      this.showPageStatus(t('translatePageFail'), true);
+    } finally {
+      translatePage.disabled = false;
+    }
+  }
+
+  private renderPageResult(result: PageTranslateResult | undefined): void {
+    const { translatePage } = this.elements;
+
+    if (!result || !result.ok) {
+      this.showPageStatus(t('translatePageFail'), true);
+      return;
+    }
+
+    if (result.alreadyDone) {
+      this.setPageTranslated(true);
+      this.showPageStatus(t('translatePageAlreadyDone'), false);
+      return;
+    }
+
+    if (result.count === 0) {
+      this.showPageStatus(t('translatePageEmpty'), false);
+      return;
+    }
+
+    this.setPageTranslated(true);
+    this.showPageStatus(t('translatePageDone', result.count), false);
+  }
+
+  /** 切换按钮文案与内部状态 */
+  private setPageTranslated(translated: boolean): void {
+    this.pageTranslated = translated;
+    this.elements.translatePage.textContent = translated ? t('restorePage') : t('translatePage');
+  }
+
+  private async restoreActivePage(): Promise<void> {
+    const tabId = await this.activeTabId();
+    if (tabId === null) return;
+
+    try {
+      await chrome.tabs.sendMessage(tabId, { type: 'restorePage' });
+      this.showPageStatus(t('pageRestored'), false);
+    } catch {
+      this.showPageStatus(t('translatePageFail'), true);
+    }
+
+    this.setPageTranslated(false);
+  }
+
+  private showPageStatus(text: string, isError: boolean): void {
+    const { pageStatus } = this.elements;
+    pageStatus.textContent = text;
+    pageStatus.classList.toggle('is-error', isError);
+  }
+
   private currentSourceLang(): string {
     return this.elements.sourceSelect.value || AUTO_LANG;
   }
@@ -229,10 +362,6 @@ class PopupController {
   private async doTranslate(): Promise<void> {
     const text = this.elements.input.value.trim();
     const target = this.settings?.targetLang ?? this.elements.targetSelect.value;
-
-    this.elements.more.href = text
-      ? getTranslateUrl(this.currentSourceLang(), target, text, 'gtx_po')
-      : 'https://translate.google.com/?source=gtx_po';
 
     if (!text) {
       this.clearResult();
@@ -305,7 +434,6 @@ class PopupController {
     elements.resultText.textContent = '';
     elements.resultSentences.replaceChildren();
     elements.playAudio.hidden = true;
-    elements.more.href = 'https://translate.google.com/?source=gtx_po';
     this.lastResult = null;
   }
 

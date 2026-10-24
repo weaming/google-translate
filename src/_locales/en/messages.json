@@ -11,17 +11,8 @@
   "translate": {
     "message": "Translate"
   },
-  "more": {
-    "message": "MORE »"
-  },
-  "learnMore": {
-    "message": "LEARN MORE"
-  },
   "openInTranslate": {
     "message": "OPEN IN GOOGLE TRANSLATE"
-  },
-  "footerOptions": {
-    "message": "Extension Options"
   },
   "translationError": {
     "message": "Error fetching translation. Check your network connection."
@@ -110,5 +101,48 @@
         "content": "$1"
       }
     }
+  },
+  "translatePage": {
+    "message": "Translate this page"
+  },
+  "translatePageProgress": {
+    "message": "Translating $DONE$/$TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "translatePageDone": {
+    "message": "Translated $COUNT$ blocks",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "translatePageEmpty": {
+    "message": "No translatable content on this page"
+  },
+  "translatePageAlreadyDone": {
+    "message": "This page is already translated"
+  },
+  "restorePage": {
+    "message": "Restore page"
+  },
+  "pageRestored": {
+    "message": "Restored"
+  },
+  "translatePageFail": {
+    "message": "Translation failed, please retry"
+  },
+  "pageNeedsReload": {
+    "message": "Please reload the page and retry"
+  },
+  "footerOptions": {
+    "message": "Extension Options"
   }
 }

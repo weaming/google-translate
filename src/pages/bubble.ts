@@ -5,6 +5,8 @@ import type { DetectedLanguageMessage, RuntimeMessage, SettingsChangedMessage } 
 import { t } from '../shared/i18n';
 import { MAX_SELECTION_LENGTH, selectionIssue } from '../shared/selection';
 import { isTargetLang, normLang } from '../shared/lang';
+import { hasPageTranslation, removePageTranslation, translatePage } from '../shared/page-translate';
+import type { PageTranslateResult } from '../shared/page-translate';
 import { defaultSettings, loadSettings, watchSettings } from '../shared/settings';
 import type { Settings } from '../shared/settings';
 import { fetchSpeech, translate } from '../shared/translate-api';
@@ -230,8 +232,28 @@ function onRuntimeMessage(message: RuntimeMessage): void {
     case 'detectedLanguage':
       applyDetectedLanguage((message as DetectedLanguageMessage).lang);
       break;
+    case 'restorePage':
+      removePageTranslation();
+      break;
     default:
       break;
+  }
+}
+
+/** 整页翻译：popup 触发，异步回传结果 */
+async function handleTranslatePage(sendResponse: (response: PageTranslateResult) => void): Promise<void> {
+  await settingsReady;
+
+  if (hasPageTranslation()) {
+    sendResponse({ ok: true, count: 0, alreadyDone: true });
+    return;
+  }
+
+  try {
+    const count = await translatePage({ targetLang: settings.targetLang });
+    sendResponse({ ok: true, count, alreadyDone: false });
+  } catch (error) {
+    sendResponse({ ok: false, count: 0, alreadyDone: false, error: String(error) });
   }
 }
 
@@ -254,10 +276,18 @@ function attachBubblePort(): void {
 }
 
 async function init(): Promise<void> {
+  // popup 用它判断内容脚本是否已注入
+  (globalThis as { __gtxInjected?: boolean }).__gtxInjected = true;
+
   await settingsReady;
   attachBubblePort();
 
-  chrome.runtime.onMessage.addListener((message: RuntimeMessage) => {
+  chrome.runtime.onMessage.addListener((message: RuntimeMessage, _sender, sendResponse) => {
+    if (message.type === 'translatePage') {
+      void handleTranslatePage(sendResponse);
+      return true; // 异步响应
+    }
+
     onRuntimeMessage(message);
     return false;
   });

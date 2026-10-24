@@ -31,9 +31,14 @@ export interface PauseAudioMessage {
   type: 'pauseAudio';
 }
 
-/** 打开选项页 */
-export interface OpenOptionsMessage {
-  type: 'openOptions';
+/** popup 请求内容脚本翻译整页 */
+export interface TranslatePageMessage {
+  type: 'translatePage';
+}
+
+/** popup 请求内容脚本还原整页 */
+export interface RestorePageMessage {
+  type: 'restorePage';
 }
 
 export type RuntimeMessage =
@@ -42,7 +47,8 @@ export type RuntimeMessage =
   | DetectedLanguageMessage
   | PlayAudioMessage
   | PauseAudioMessage
-  | OpenOptionsMessage;
+  | TranslatePageMessage
+  | RestorePageMessage;
 
 export const OFFSCREEN_PATH = 'offscreen.html';
 

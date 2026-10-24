@@ -65,6 +65,7 @@ export function normalizeSettings(raw: Record<string, unknown>): Settings {
     base.addImageContextMenu = raw[STORAGE_KEYS.addImageContextMenu] as boolean;
   }
 
+
   return base;
 }
 

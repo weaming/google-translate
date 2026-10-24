@@ -11,17 +11,8 @@
   "translate": {
     "message": "翻译"
   },
-  "more": {
-    "message": "更多 »"
-  },
-  "learnMore": {
-    "message": "了解详情"
-  },
   "openInTranslate": {
     "message": "在 Google 翻译中打开"
-  },
-  "footerOptions": {
-    "message": "扩展程序选项"
   },
   "translationError": {
     "message": "提取翻译时出错，请检查网络连接。"
@@ -110,5 +101,48 @@
         "content": "$1"
       }
     }
+  },
+  "translatePage": {
+    "message": "翻译此页"
+  },
+  "translatePageProgress": {
+    "message": "正在翻译 $DONE$/$TOTAL$",
+    "placeholders": {
+      "done": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "translatePageDone": {
+    "message": "已翻译 $COUNT$ 段",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "translatePageEmpty": {
+    "message": "当前页面没有可翻译的内容"
+  },
+  "translatePageAlreadyDone": {
+    "message": "本页已翻译"
+  },
+  "restorePage": {
+    "message": "还原页面"
+  },
+  "pageRestored": {
+    "message": "已还原"
+  },
+  "translatePageFail": {
+    "message": "翻译失败，请稍后重试"
+  },
+  "pageNeedsReload": {
+    "message": "请先刷新页面再试"
+  },
+  "footerOptions": {
+    "message": "扩展程序选项"
   }
 }
