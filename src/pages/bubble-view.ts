@@ -34,6 +34,8 @@ const STYLE = `
   background: #fff; color: #202124; border: 1px solid #dadce0; border-radius: 8px;
   box-shadow: 0 4px 16px rgba(60,64,67,.25); font-size: 13px; line-height: 1.5;
   overflow-wrap: break-word; word-break: break-word; }
+/* 图标态只占图标大小，展开后再回到气泡宽度 */
+.gtx-box-icon { min-width: 0; max-width: none; }
 .gtx-arrow { position: absolute; width: 12px; height: 12px; background: #fff; border: 1px solid #dadce0;
   transform: rotate(45deg); }
 .gtx-arrow-top { top: -7px; border-right: 0; border-bottom: 0; }
@@ -65,10 +67,12 @@ const STYLE = `
 .gtx-line-trans { font-size: 13px; }
 .gtx-error { color: #d93025; font-size: 12px; margin: 0 0 8px; }
 .gtx-notice { color: #5f6368; font-size: 12px; padding-right: 22px; }
-.gtx-icon-wrap { padding: 6px; }
-.gtx-icon { width: 36px; height: 32px; display: flex; align-items: center; justify-content: center;
+.gtx-icon-wrap { padding: 2px; }
+.gtx-icon { width: 30px; height: 28px; display: flex; align-items: center; justify-content: center;
   cursor: pointer; border-radius: 4px; background: #fff; border: 0; padding: 0; }
 .gtx-icon:hover { background: #f1f3f4; }
+.gtx-icon:disabled { cursor: progress; }
+.gtx-icon-loading { opacity: .5; }
 .gtx-footer { display: flex; align-items: center; gap: 12px; border-top: 1px solid #f1f3f4; padding: 6px 12px; }
 .gtx-link { color: #1a73e8; font-size: 11px; text-decoration: none; cursor: pointer;
   letter-spacing: .3px; text-transform: uppercase; }
@@ -131,6 +135,7 @@ export class BubbleView {
   private readonly box: HTMLElement;
   private readonly arrow: HTMLElement;
   private mode: BubbleMode = 'bubble';
+  private iconButton: HTMLButtonElement | null = null;
 
   constructor(private readonly callbacks: BubbleCallbacks) {
     this.host = document.createElement('div');
@@ -210,6 +215,7 @@ export class BubbleView {
   renderIcon(): void {
     this.mode = 'icon';
     this.reset();
+    this.box.classList.add('gtx-box-icon');
 
     const wrap = el('div', 'gtx-icon-wrap');
     const icon = el('button', 'gtx-icon');
@@ -218,11 +224,21 @@ export class BubbleView {
     icon.innerHTML = ICON_SVG;
     icon.addEventListener('click', (event) => {
       event.stopPropagation();
+      // 点击后仍保持图标大小，结果回来再展开；等待期间禁用避免重复请求
+      this.setIconLoading(true);
       this.callbacks.onExpand();
     });
 
+    this.iconButton = icon;
     wrap.appendChild(icon);
     this.box.appendChild(wrap);
+  }
+
+  /** 图标态请求中：只改视觉与可点击性，不改变气泡尺寸 */
+  setIconLoading(isLoading: boolean): void {
+    if (!this.iconButton) return;
+    this.iconButton.disabled = isLoading;
+    this.iconButton.classList.toggle('gtx-icon-loading', isLoading);
   }
 
   renderLoading(state: BubbleState): void {
@@ -348,6 +364,8 @@ export class BubbleView {
   }
 
   private reset(): void {
+    this.box.classList.remove('gtx-box-icon');
+    this.iconButton = null;
     this.box.replaceChildren(this.arrow);
   }
 }

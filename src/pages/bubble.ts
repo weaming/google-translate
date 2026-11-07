@@ -123,8 +123,12 @@ async function runTranslate(
     return;
   }
 
-  bubble.renderLoading(state);
-  bubble.position(anchor);
+  // 从图标展开时保持图标尺寸，等结果回来再一次性展开，避免先闪一个空白气泡
+  const isIconPending = forceExpand && bubble.getMode() === 'icon';
+  if (!isIconPending) {
+    bubble.renderLoading(state);
+    bubble.position(anchor);
+  }
 
   const result = await translate(text, sourceLang || 'auto', settings.targetLang, 'en');
   if (!view) return;
