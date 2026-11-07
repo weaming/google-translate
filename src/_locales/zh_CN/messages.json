@@ -53,9 +53,6 @@
   "optionsImageMenu": {
     "message": "右键菜单包含图片翻译"
   },
-  "optionsSave": {
-    "message": "保存"
-  },
   "optionsReset": {
     "message": "重置"
   },

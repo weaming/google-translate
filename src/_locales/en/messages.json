@@ -53,9 +53,6 @@
   "optionsImageMenu": {
     "message": "Include image translation in context menu"
   },
-  "optionsSave": {
-    "message": "Save"
-  },
   "optionsReset": {
     "message": "Reset"
   },

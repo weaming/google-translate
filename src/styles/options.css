@@ -102,14 +102,6 @@ button {
   cursor: pointer;
 }
 
-.gtx-primary {
-  border: 1px solid var(--gtx-blue);
-  background: var(--gtx-blue);
-  color: #fff;
-}
-
-.gtx-primary:hover { background: #1765cc; }
-
 .gtx-secondary {
   border: 1px solid var(--gtx-line);
   background: #fff;

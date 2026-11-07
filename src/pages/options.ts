@@ -19,7 +19,6 @@ interface Elements {
   targetSelect: HTMLSelectElement;
   detectLanguage: HTMLInputElement;
   imageMenu: HTMLInputElement;
-  save: HTMLButtonElement;
   reset: HTMLButtonElement;
   status: HTMLElement;
 }
@@ -35,7 +34,6 @@ function queryElements(): Elements {
     targetSelect: pick<HTMLSelectElement>('targetLangSel'),
     detectLanguage: pick<HTMLInputElement>('detectLanguage'),
     imageMenu: pick<HTMLInputElement>('addImageContextMenu'),
-    save: pick<HTMLButtonElement>('saveBtn'),
     reset: pick<HTMLButtonElement>('resetBtn'),
     status: pick('saveStatus'),
   };
@@ -98,7 +96,6 @@ function bindStaticText(): void {
   pick('none-option-tip').textContent = localizedText('optionsNoneTip');
   pick('detect-language-option').textContent = localizedText('optionsAlwaysShowIcon');
   pick('image-menu-option').textContent = localizedText('optionsImageMenu');
-  pick('saveBtn').textContent = localizedText('optionsSave');
   pick('resetBtn').textContent = localizedText('optionsReset');
 
   const homepage = pick<HTMLAnchorElement>('footer-homepage');
@@ -138,7 +135,7 @@ async function start(): Promise<void> {
     })
     .catch(() => undefined);
 
-  elements.save.addEventListener('click', () => void persist(elements, collectSettings(elements)));
+  bindAutoSave(elements);
 
   elements.reset.addEventListener('click', () => {
     const defaults = defaultSettings();
@@ -147,13 +144,29 @@ async function start(): Promise<void> {
   });
 }
 
+/** 任何选项变更即保存，不再需要保存按钮 */
+function bindAutoSave(elements: Elements): void {
+  const save = () => void persist(elements, collectSettings(elements));
+
+  elements.targetSelect.addEventListener('change', save);
+  elements.detectLanguage.addEventListener('change', save);
+  elements.imageMenu.addEventListener('change', save);
+
+  for (const radio of document.querySelectorAll<HTMLInputElement>('input[name="showBubble"]')) {
+    radio.addEventListener('change', save);
+  }
+}
+
+let statusTimer = 0;
+
 /** 保存并短暂显示“已保存”提示 */
 async function persist(elements: Elements, settings: Settings): Promise<void> {
   await saveSettings(settings);
 
   elements.status.textContent = t('optionsSavedStatus');
   elements.status.hidden = false;
-  window.setTimeout(() => {
+  window.clearTimeout(statusTimer);
+  statusTimer = window.setTimeout(() => {
     elements.status.hidden = true;
   }, STATUS_VISIBLE_MS);
 }
