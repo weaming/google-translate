@@ -103,7 +103,8 @@ async function runTranslate(
   await settingsReady;
 
   const anchor = getAnchorRect(selection, event);
-  const sourceLang = detectPageLang();
+  // 网页语言不代表选中文字的语言，混合语言页面必须按选区自动检测
+  const sourceLang = 'auto';
   const bubble = ensureView();
 
   activeText = text;
@@ -130,7 +131,7 @@ async function runTranslate(
     bubble.position(anchor);
   }
 
-  const result = await translate(text, sourceLang || 'auto', settings.targetLang, 'en');
+  const result = await translate(text, sourceLang, settings.targetLang, 'en');
   if (!view) return;
 
   bubble.renderResult({
