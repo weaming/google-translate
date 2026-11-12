@@ -30,17 +30,30 @@ const SOURCE_SCROLL_CHARS = 200;
 const STYLE = `
 :host { all: initial; }
 * { box-sizing: border-box; font-family: Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif; }
-.gtx-box { position: absolute; min-width: 240px; max-width: min(420px, calc(100vw - 24px));
+.gtx-box { position: absolute; display: flex; flex-direction: column;
+  width: max-content; min-width: min(240px, calc(var(--gtx-view-width, 100vw) - 24px));
+  max-width: min(420px, calc(var(--gtx-view-width, 100vw) - 24px));
   background: #fff; color: #202124; border: 1px solid #dadce0; border-radius: 8px;
   box-shadow: 0 4px 16px rgba(60,64,67,.25); font-size: 13px; line-height: 1.5;
   overflow-wrap: break-word; word-break: break-word; }
 /* 图标态只占图标大小，展开后再回到气泡宽度 */
-.gtx-box-icon { min-width: 0; max-width: none; }
+.gtx-box-icon { width: max-content; min-width: 0; max-width: none; }
+.gtx-box-long { width: min(680px, calc(var(--gtx-view-width, 100vw) - 24px));
+  max-width: min(680px, calc(var(--gtx-view-width, 100vw) - 24px)); }
 .gtx-arrow { position: absolute; width: 12px; height: 12px; background: #fff; border: 1px solid #dadce0;
   transform: rotate(45deg); }
 .gtx-arrow-top { top: -7px; border-right: 0; border-bottom: 0; }
 .gtx-arrow-bottom { bottom: -7px; border-left: 0; border-top: 0; }
-.gtx-body { position: relative; padding: 10px 12px 8px; }
+.gtx-body { position: relative; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  padding: 10px 12px 8px; }
+.gtx-box-long .gtx-body { padding: 20px 24px 12px; }
+.gtx-box-long .gtx-source { font-size: 14px; line-height: 1.7; margin: 0 0 16px; }
+.gtx-box-long .gtx-result { font-size: 16px; line-height: 1.7; margin: 0 0 16px; }
+.gtx-box-long .gtx-source-scroll, .gtx-box-long .gtx-sentences {
+  max-height: none; overflow-y: visible; scrollbar-gutter: auto; }
+.gtx-box-long .gtx-line { padding: 8px 0; white-space: pre-wrap; }
+.gtx-box-long .gtx-line-orig { font-size: 14px; line-height: 1.7; }
+.gtx-box-long .gtx-line-trans { font-size: 16px; line-height: 1.7; }
 /* 给右上角关闭按钮留位，避免文字被遮住 */
 .gtx-source, .gtx-result { padding-right: 22px; }
 .gtx-close { position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; padding: 0; border: 0;
@@ -73,7 +86,7 @@ const STYLE = `
 .gtx-icon:hover { background: #f1f3f4; }
 .gtx-icon:disabled { cursor: progress; }
 .gtx-icon-loading { opacity: .5; }
-.gtx-footer { display: flex; align-items: center; gap: 12px; border-top: 1px solid #f1f3f4; padding: 6px 12px; }
+.gtx-footer { flex-shrink: 0; display: flex; align-items: center; gap: 12px; border-top: 1px solid #f1f3f4; padding: 6px 12px; }
 .gtx-link { color: #1a73e8; font-size: 11px; text-decoration: none; cursor: pointer;
   letter-spacing: .3px; text-transform: uppercase; }
 .gtx-link:hover { text-decoration: underline; }
@@ -106,7 +119,6 @@ function el<K extends keyof HTMLElementTagNameMap>(
   return node;
 }
 
-/** 多句时逐句对照；只有一句则不需要重复展示 */
 /** 原文完整展示，过长时限制高度并滚动，不再截断 */
 function buildSource(text: string): HTMLElement {
   const node = el('div', 'gtx-source', text);
@@ -114,6 +126,7 @@ function buildSource(text: string): HTMLElement {
   return node;
 }
 
+/** 多句时逐句对照；只有一句则不需要重复展示 */
 function buildSentences(sentences: Sentence[]): HTMLElement | null {
   const cleaned = cleanSentences(sentences);
   const meaningful = cleaned.filter((item) => item.orig && item.trans && item.orig !== item.trans);
@@ -178,11 +191,11 @@ export class BubbleView {
     const docEl = document.documentElement;
     const viewWidth = docEl.clientWidth;
     const viewHeight = docEl.clientHeight;
-    const maxHeight = viewHeight - margin * 2;
+    const maxHeight = Math.max(0, viewHeight - margin * 2);
 
     // 长句内容可能高于视口，先限制最大高度，否则会跑到屏幕外
+    this.box.style.setProperty('--gtx-view-width', `${viewWidth}px`);
     this.box.style.maxHeight = `${maxHeight}px`;
-    this.box.style.overflowY = 'auto';
 
     const { width, height } = this.box.getBoundingClientRect();
     const { scrollX: offsetX, scrollY: offsetY } = window;
@@ -244,6 +257,7 @@ export class BubbleView {
   renderLoading(state: BubbleState): void {
     this.mode = 'bubble';
     this.reset();
+    this.setReadingLayout(state);
 
     const body = el('div', 'gtx-body');
     body.appendChild(this.buildHead());
@@ -255,6 +269,7 @@ export class BubbleView {
   renderResult(state: BubbleState): void {
     this.mode = 'bubble';
     this.reset();
+    this.setReadingLayout(state);
 
     const body = el('div', 'gtx-body');
     body.appendChild(this.buildHead());
@@ -363,8 +378,14 @@ export class BubbleView {
     return footer;
   }
 
+  /** 原文或译文较长时采用宽版阅读布局，加载与结果保持同一判断规则 */
+  private setReadingLayout(state: BubbleState): void {
+    const textLength = Math.max(cleanText(state.original).length, cleanText(state.result?.text ?? '').length);
+    this.box.classList.toggle('gtx-box-long', textLength > SOURCE_SCROLL_CHARS);
+  }
+
   private reset(): void {
-    this.box.classList.remove('gtx-box-icon');
+    this.box.classList.remove('gtx-box-icon', 'gtx-box-long');
     this.iconButton = null;
     this.box.replaceChildren(this.arrow);
   }
