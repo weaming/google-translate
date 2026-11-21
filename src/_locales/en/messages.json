@@ -12,7 +12,7 @@
     "message": "Translate"
   },
   "openInTranslate": {
-    "message": "OPEN IN GOOGLE TRANSLATE"
+    "message": "Open in Google Translate"
   },
   "translationError": {
     "message": "Error fetching translation. Check your network connection."
@@ -82,6 +82,20 @@
   },
   "playTranslation": {
     "message": "Listen to translation"
+  },
+  "copyTranslation": {
+    "message": "Copy translation"
+  },
+  "copied": {
+    "message": "Copied"
+  },
+  "sentenceCompare": {
+    "message": "Sentence by sentence ($COUNT$)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   },
   "tooLongToSpeak": {
     "message": "Over $COUNT$ characters",

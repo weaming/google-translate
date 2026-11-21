@@ -83,6 +83,20 @@
   "playTranslation": {
     "message": "朗读译文"
   },
+  "copyTranslation": {
+    "message": "复制译文"
+  },
+  "copied": {
+    "message": "已复制"
+  },
+  "sentenceCompare": {
+    "message": "逐句对照（$COUNT$）",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
   "tooLongToSpeak": {
     "message": "超过$COUNT$字",
     "placeholders": {
